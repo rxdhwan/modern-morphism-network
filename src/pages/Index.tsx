@@ -1,12 +1,37 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useEffect } from 'react';
+import Navbar from '@/components/Navbar';
+import HeroSection from '@/components/HeroSection';
+import ApplicationsSection from '@/components/ApplicationsSection';
+import RoadmapSection from '@/components/RoadmapSection';
+import TokenSection from '@/components/TokenSection';
+import FooterSection from '@/components/FooterSection';
+import ScrollToTop from '@/components/ScrollToTop';
+import useAnimateOnScroll from '@/hooks/useAnimateOnScroll';
 
 const Index = () => {
+  useAnimateOnScroll();
+
+  useEffect(() => {
+    // Set smooth scroll behavior for the whole page
+    document.documentElement.classList.add('smooth-scroll');
+    
+    return () => {
+      document.documentElement.classList.remove('smooth-scroll');
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen flex flex-col bg-background relative">
+      <Navbar />
+      <main className="flex-grow">
+        <HeroSection />
+        <ApplicationsSection />
+        <RoadmapSection />
+        <TokenSection />
+      </main>
+      <FooterSection />
+      <ScrollToTop />
     </div>
   );
 };
