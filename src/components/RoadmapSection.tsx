@@ -1,5 +1,6 @@
 
 import { useEffect, useRef } from 'react';
+import useAnimateOnScroll from '@/hooks/useAnimateOnScroll';
 
 const milestones = [
   {
@@ -31,6 +32,9 @@ const milestones = [
 const RoadmapSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
+  
+  // Use our custom hook for animations
+  useAnimateOnScroll();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -49,12 +53,15 @@ const RoadmapSection = () => {
     }
 
     if (timelineRef.current) {
-      timelineRef.current.querySelectorAll('.milestone').forEach((milestone, index) => {
-        milestone.classList.add('opacity-0', 'translate-y-8');
-        milestone.style.transitionDelay = `${0.2 + index * 0.15}s`;
-        milestone.style.transitionProperty = 'opacity, transform';
-        milestone.style.transitionDuration = '0.6s';
-        milestone.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 0.2, 1)';
+      const milestones = timelineRef.current.querySelectorAll('.milestone');
+      milestones.forEach((milestone, index) => {
+        // Type casting to HTMLElement to access style property
+        const milestoneElement = milestone as HTMLElement;
+        milestoneElement.classList.add('opacity-0', 'translate-y-8');
+        milestoneElement.style.transitionDelay = `${0.2 + index * 0.15}s`;
+        milestoneElement.style.transitionProperty = 'opacity, transform';
+        milestoneElement.style.transitionDuration = '0.6s';
+        milestoneElement.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 0.2, 1)';
         observer.observe(milestone);
       });
     }

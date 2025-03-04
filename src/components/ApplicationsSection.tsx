@@ -2,6 +2,7 @@
 import { Brain, Briefcase, MessageSquare, Users } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useEffect, useRef } from 'react';
+import useAnimateOnScroll from '@/hooks/useAnimateOnScroll';
 
 const applications = [
   {
@@ -37,6 +38,9 @@ const applications = [
 const ApplicationsSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
+  
+  // Use our custom hook for animations
+  useAnimateOnScroll();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -55,8 +59,11 @@ const ApplicationsSection = () => {
     }
 
     if (cardsRef.current) {
-      cardsRef.current.querySelectorAll('.app-card').forEach((card, index) => {
-        card.style.animationDelay = `${index * 0.1}s`;
+      const cards = cardsRef.current.querySelectorAll('.app-card');
+      cards.forEach((card, index) => {
+        // Type casting to HTMLElement to access style property
+        const cardElement = card as HTMLElement;
+        cardElement.style.animationDelay = `${index * 0.1}s`;
         observer.observe(card);
       });
     }

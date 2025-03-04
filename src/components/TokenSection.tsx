@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { DollarSign, Shield, Zap, Globe } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import useAnimateOnScroll from '@/hooks/useAnimateOnScroll';
 
 const features = [
   {
@@ -25,6 +26,9 @@ const TokenSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const tokenRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
+  
+  // Use our custom hook for animations
+  useAnimateOnScroll();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -47,12 +51,15 @@ const TokenSection = () => {
     }
     
     if (featuresRef.current) {
-      featuresRef.current.querySelectorAll('.feature-card').forEach((card, index) => {
-        card.classList.add('opacity-0', 'translate-y-8');
-        card.style.transitionDelay = `${0.2 + index * 0.15}s`;
-        card.style.transitionProperty = 'opacity, transform';
-        card.style.transitionDuration = '0.6s';
-        card.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 0.2, 1)';
+      const featureCards = featuresRef.current.querySelectorAll('.feature-card');
+      featureCards.forEach((card, index) => {
+        // Type casting to HTMLElement to access style property
+        const cardElement = card as HTMLElement;
+        cardElement.classList.add('opacity-0', 'translate-y-8');
+        cardElement.style.transitionDelay = `${0.2 + index * 0.15}s`;
+        cardElement.style.transitionProperty = 'opacity, transform';
+        cardElement.style.transitionDuration = '0.6s';
+        cardElement.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 0.2, 1)';
         observer.observe(card);
       });
     }
