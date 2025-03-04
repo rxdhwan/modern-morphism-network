@@ -1,8 +1,10 @@
 
-import { useEffect, useRef } from 'react';
-import { DollarSign, Shield, Zap, Globe } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { DollarSign, Shield, Zap, Globe, Copy, Check, ExternalLink } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import useAnimateOnScroll from '@/hooks/useAnimateOnScroll';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { FadeIn, StaggeredAnimation } from '@/lib/animations';
 
 const features = [
   {
@@ -22,55 +24,33 @@ const features = [
   },
 ];
 
+const tokenomics = [
+  { category: 'Presale', percentage: 40, color: 'bg-blue-500' },
+  { category: 'Liquidity', percentage: 25, color: 'bg-green-500' },
+  { category: 'Team', percentage: 15, color: 'bg-purple-500' },
+  { category: 'Marketing', percentage: 10, color: 'bg-orange-500' },
+  { category: 'Development', percentage: 10, color: 'bg-red-500' }
+];
+
+const CONTRACT_ADDRESS = '0x1234567890abcdef1234567890abcdef12345678';
+
 const TokenSection = () => {
-  const sectionRef = useRef<HTMLElement>(null);
-  const tokenRef = useRef<HTMLDivElement>(null);
-  const featuresRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
   
-  // Use our custom hook for animations
-  useAnimateOnScroll();
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animated');
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    if (tokenRef.current) {
-      observer.observe(tokenRef.current);
-    }
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(CONTRACT_ADDRESS);
+    setCopied(true);
+    toast({
+      title: "Address Copied",
+      description: "Contract address copied to clipboard",
+    });
     
-    if (featuresRef.current) {
-      const featureCards = featuresRef.current.querySelectorAll('.feature-card');
-      featureCards.forEach((card, index) => {
-        // Type casting to HTMLElement to access style property
-        const cardElement = card as HTMLElement;
-        cardElement.classList.add('opacity-0', 'translate-y-8');
-        cardElement.style.transitionDelay = `${0.2 + index * 0.15}s`;
-        cardElement.style.transitionProperty = 'opacity, transform';
-        cardElement.style.transitionDuration = '0.6s';
-        cardElement.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 0.2, 1)';
-        observer.observe(card);
-      });
-    }
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <section id="token" ref={sectionRef} className="py-20 animate-on-scroll bg-gradient-to-b from-background to-blue-50/50">
+    <section id="token" className="py-20 bg-gradient-to-b from-background to-blue-50/50">
       <div className="container">
         <div className="text-center mb-16">
           <span className="px-4 py-1.5 text-xs font-medium bg-primary/10 text-primary rounded-full">
@@ -84,11 +64,8 @@ const TokenSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div 
-            ref={tokenRef}
-            className="perspective flex flex-col items-center animate-on-scroll"
-          >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+          <FadeIn className="flex flex-col items-center" direction="left">
             <div className="relative w-64 h-64 rounded-full bg-gradient-to-br from-primary to-blue-400 token-glow hover:rotate-y rotate-y">
               <div className="absolute inset-2 rounded-full bg-blue-100 flex items-center justify-center">
                 <div className="flex items-center gap-2">
@@ -97,32 +74,88 @@ const TokenSection = () => {
                 </div>
               </div>
             </div>
-            <div className="mt-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                Contract Address: Coming Soon
-              </p>
+            
+            <div className="mt-8 text-center w-full max-w-md">
+              <div className="flex items-center justify-center rounded-lg border bg-card p-3 mb-4">
+                <span className="text-sm font-mono mr-2 truncate flex-1">{CONTRACT_ADDRESS}</span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={copyToClipboard}
+                  className="flex-shrink-0"
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                </Button>
+              </div>
+              
+              <div className="flex justify-center gap-4 mt-4">
+                <Button variant="outline" className="gap-2">
+                  <ExternalLink size={16} />
+                  <a href="https://t.me/rabytoken" target="_blank" rel="noopener noreferrer">
+                    Join Telegram
+                  </a>
+                </Button>
+              </div>
             </div>
-          </div>
+          </FadeIn>
 
-          <div ref={featuresRef} className="space-y-6">
-            {features.map((feature, index) => (
-              <Card 
-                key={index}
-                className="feature-card p-6 border border-border/50 hover:border-primary/20 rounded-xl overflow-hidden"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="mt-1 h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    {feature.icon}
+          <div>
+            <StaggeredAnimation>
+              {features.map((feature, index) => (
+                <Card 
+                  key={index}
+                  className="p-6 border border-border/50 hover:border-primary/20 rounded-xl overflow-hidden mb-6 last:mb-0"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="mt-1 h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      {feature.icon}
+                    </div>
+                    <div>
+                      <h3 className="font-display font-bold text-xl mb-2">{feature.title}</h3>
+                      <p className="text-muted-foreground">{feature.description}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-display font-bold text-xl mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))}
+            </StaggeredAnimation>
           </div>
         </div>
+        
+        {/* Tokenomics Section */}
+        <FadeIn className="mt-24" delay={300}>
+          <h3 className="text-center font-display font-bold text-2xl md:text-3xl mb-8">
+            Tokenomics
+          </h3>
+          
+          <div className="max-w-3xl mx-auto">
+            <div className="flex h-10 w-full overflow-hidden rounded-lg mb-8">
+              {tokenomics.map((item) => (
+                <div 
+                  key={item.category}
+                  className={`h-full ${item.color}`}
+                  style={{ width: `${item.percentage}%` }}
+                />
+              ))}
+            </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              {tokenomics.map((item) => (
+                <div key={item.category} className="text-center">
+                  <div className={`h-3 w-6 ${item.color} rounded mx-auto mb-2`}></div>
+                  <div className="font-medium">{item.category}</div>
+                  <div className="text-lg font-bold">{item.percentage}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="text-center mt-12 max-w-2xl mx-auto">
+            <p className="text-muted-foreground">
+              The $RABY token is designed with a balanced distribution to ensure long-term sustainability, 
+              fair launch, and adequate resources for continuous development and growth.
+            </p>
+          </div>
+        </FadeIn>
       </div>
     </section>
   );

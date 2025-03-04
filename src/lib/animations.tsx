@@ -1,5 +1,5 @@
 
-import { useEffect, useState, ReactNode } from 'react';
+import { useEffect, useState, useRef, ReactNode } from 'react';
 
 // Animated element with fade in animation
 export const FadeIn = ({ 
@@ -16,7 +16,7 @@ export const FadeIn = ({
   threshold?: number;
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [elementId] = useState(`fade-${Math.random().toString(36).substring(2, 8)}`);
+  const elementRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -29,7 +29,7 @@ export const FadeIn = ({
       { threshold }
     );
     
-    const currentElement = document.getElementById(elementId);
+    const currentElement = elementRef.current;
     
     if (currentElement) {
       observer.observe(currentElement);
@@ -40,11 +40,12 @@ export const FadeIn = ({
         observer.unobserve(currentElement);
       }
     };
-  }, [threshold, elementId]);
+  }, [threshold]);
   
   const getAnimationClass = () => {
     switch (direction) {
       case 'up': return 'animate-fade-in';
+      case 'down': return 'animate-fade-in-down';
       case 'left': return 'animate-fade-in-right';
       case 'right': return 'animate-fade-in-left';
       default: return 'animate-fade-in';
@@ -53,7 +54,7 @@ export const FadeIn = ({
   
   return (
     <div 
-      id={elementId}
+      ref={elementRef}
       className={`${className} ${isVisible ? getAnimationClass() : 'opacity-0'}`} 
       style={{ animationDelay: `${delay}ms` }}
     >
@@ -62,21 +63,53 @@ export const FadeIn = ({
   );
 };
 
-// Animated element with blur in animation
-export const BlurIn = ({ 
-  children, 
+// Utility hook for element animation on scroll
+export const useElementAnimation = (threshold = 0.1) => {
+  const ref = useRef<HTMLElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold }
+    );
+
+    const currentElement = ref.current;
+    
+    if (currentElement) {
+      observer.observe(currentElement);
+    }
+    
+    return () => {
+      if (currentElement) {
+        observer.unobserve(currentElement);
+      }
+    };
+  }, [threshold]);
+
+  return { ref, isVisible };
+};
+
+// Enhanced staggered animations for multiple children
+export const StaggeredAnimation = ({
+  children,
   className = '',
-  delay = 0,
+  staggerDelay = 100,
   threshold = 0.1
-}: { 
-  children: ReactNode; 
+}: {
+  children: ReactNode[];
   className?: string;
-  delay?: number;
+  staggerDelay?: number;
   threshold?: number;
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [elementId] = useState(`blur-${Math.random().toString(36).substring(2, 8)}`);
-  
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -88,7 +121,7 @@ export const BlurIn = ({
       { threshold }
     );
     
-    const currentElement = document.getElementById(elementId);
+    const currentElement = containerRef.current;
     
     if (currentElement) {
       observer.observe(currentElement);
@@ -99,15 +132,18 @@ export const BlurIn = ({
         observer.unobserve(currentElement);
       }
     };
-  }, [threshold, elementId]);
-  
+  }, [threshold]);
+
   return (
-    <div 
-      id={elementId}
-      className={`${className} ${isVisible ? 'animate-blur-in' : 'opacity-0 blur-md'}`} 
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      {children}
+    <div ref={containerRef} className={className}>
+      {React.Children.map(children, (child, index) => (
+        <div 
+          className={`transition-all duration-500 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          style={{ transitionDelay: `${index * staggerDelay}ms` }}
+        >
+          {child}
+        </div>
+      ))}
     </div>
   );
 };

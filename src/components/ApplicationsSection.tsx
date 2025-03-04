@@ -1,8 +1,7 @@
 
 import { Brain, Briefcase, MessageSquare, Users } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { useEffect, useRef } from 'react';
-import useAnimateOnScroll from '@/hooks/useAnimateOnScroll';
+import { StaggeredAnimation } from '@/lib/animations';
 
 const applications = [
   {
@@ -36,45 +35,8 @@ const applications = [
 ];
 
 const ApplicationsSection = () => {
-  const sectionRef = useRef<HTMLElement>(null);
-  const cardsRef = useRef<HTMLDivElement>(null);
-  
-  // Use our custom hook for animations
-  useAnimateOnScroll();
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animated');
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    if (cardsRef.current) {
-      const cards = cardsRef.current.querySelectorAll('.app-card');
-      cards.forEach((card, index) => {
-        // Type casting to HTMLElement to access style property
-        const cardElement = card as HTMLElement;
-        cardElement.style.animationDelay = `${index * 0.1}s`;
-        observer.observe(card);
-      });
-    }
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
   return (
-    <section id="applications" ref={sectionRef} className="py-20 bg-secondary/50 animate-on-scroll">
+    <section id="applications" className="py-20 bg-secondary/50">
       <div className="container">
         <div className="text-center mb-16">
           <span className="px-4 py-1.5 text-xs font-medium bg-primary/10 text-primary rounded-full">
@@ -88,11 +50,11 @@ const ApplicationsSection = () => {
           </p>
         </div>
 
-        <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StaggeredAnimation className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {applications.map((app) => (
             <Card 
               key={app.id}
-              className="app-card border border-border/50 hover:border-primary/20 card-hover animate-on-scroll p-6 flex flex-col h-full rounded-xl overflow-hidden"
+              className="border border-border/50 hover:border-primary/20 card-hover p-6 flex flex-col h-full rounded-xl overflow-hidden"
             >
               <div className="h-14 w-14 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
                 {app.icon}
@@ -106,7 +68,7 @@ const ApplicationsSection = () => {
               </div>
             </Card>
           ))}
-        </div>
+        </StaggeredAnimation>
       </div>
     </section>
   );

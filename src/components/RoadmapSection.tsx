@@ -1,6 +1,6 @@
 
 import { useEffect, useRef } from 'react';
-import useAnimateOnScroll from '@/hooks/useAnimateOnScroll';
+import { StaggeredAnimation } from '@/lib/animations';
 
 const milestones = [
   {
@@ -30,49 +30,8 @@ const milestones = [
 ];
 
 const RoadmapSection = () => {
-  const sectionRef = useRef<HTMLElement>(null);
-  const timelineRef = useRef<HTMLDivElement>(null);
-  
-  // Use our custom hook for animations
-  useAnimateOnScroll();
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animated');
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    if (timelineRef.current) {
-      const milestones = timelineRef.current.querySelectorAll('.milestone');
-      milestones.forEach((milestone, index) => {
-        // Type casting to HTMLElement to access style property
-        const milestoneElement = milestone as HTMLElement;
-        milestoneElement.classList.add('opacity-0', 'translate-y-8');
-        milestoneElement.style.transitionDelay = `${0.2 + index * 0.15}s`;
-        milestoneElement.style.transitionProperty = 'opacity, transform';
-        milestoneElement.style.transitionDuration = '0.6s';
-        milestoneElement.style.transitionTimingFunction = 'cubic-bezier(0.4, 0, 0.2, 1)';
-        observer.observe(milestone);
-      });
-    }
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
   return (
-    <section id="roadmap" ref={sectionRef} className="py-20 animate-on-scroll relative overflow-hidden">
+    <section id="roadmap" className="py-20 relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute bottom-0 left-0 w-[80%] h-[60%] rounded-full bg-blue-500/5 blur-3xl -z-10"></div>
@@ -91,42 +50,44 @@ const RoadmapSection = () => {
           </p>
         </div>
 
-        <div ref={timelineRef} className="relative max-w-4xl mx-auto">
+        <div className="relative max-w-4xl mx-auto">
           {/* Vertical line */}
           <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gradient-to-b from-primary/10 via-primary/50 to-primary/10"></div>
           
-          {milestones.map((milestone, index) => (
-            <div 
-              key={milestone.id} 
-              className={`milestone relative flex items-center mb-16 last:mb-0 transition-all ${
-                index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-              }`}
-            >
-              <div className={`hidden md:block w-1/2 ${index % 2 === 0 ? 'pr-10 text-right' : 'pl-10 text-left'}`}>
-                <span className="inline-block mb-2 px-4 py-1.5 rounded-full font-medium text-sm bg-primary/10 text-primary">
-                  {milestone.quarter}
-                </span>
-                <h3 className="text-xl font-display font-bold mb-2">{milestone.title}</h3>
-                <p className="text-muted-foreground">{milestone.description}</p>
+          <StaggeredAnimation staggerDelay={150}>
+            {milestones.map((milestone, index) => (
+              <div 
+                key={milestone.id} 
+                className={`relative flex items-center mb-16 last:mb-0 ${
+                  index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
+                }`}
+              >
+                <div className={`hidden md:block w-1/2 ${index % 2 === 0 ? 'pr-10 text-right' : 'pl-10 text-left'}`}>
+                  <span className="inline-block mb-2 px-4 py-1.5 rounded-full font-medium text-sm bg-primary/10 text-primary">
+                    {milestone.quarter}
+                  </span>
+                  <h3 className="text-xl font-display font-bold mb-2">{milestone.title}</h3>
+                  <p className="text-muted-foreground">{milestone.description}</p>
+                </div>
+                
+                {/* Circle marker */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 w-5 h-5 bg-primary rounded-full border-4 border-background flex items-center justify-center z-10">
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                </div>
+                
+                {/* Mobile-only content */}
+                <div className="md:hidden pl-8 mb-6">
+                  <span className="inline-block mb-2 px-4 py-1.5 rounded-full font-medium text-sm bg-primary/10 text-primary">
+                    {milestone.quarter}
+                  </span>
+                  <h3 className="text-xl font-display font-bold mb-2">{milestone.title}</h3>
+                  <p className="text-muted-foreground">{milestone.description}</p>
+                </div>
+                
+                <div className="hidden md:block w-1/2"></div>
               </div>
-              
-              {/* Circle marker */}
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-5 h-5 bg-primary rounded-full border-4 border-background flex items-center justify-center z-10">
-                <div className="w-2 h-2 bg-white rounded-full"></div>
-              </div>
-              
-              {/* Mobile-only content */}
-              <div className="md:hidden pl-8 mb-6">
-                <span className="inline-block mb-2 px-4 py-1.5 rounded-full font-medium text-sm bg-primary/10 text-primary">
-                  {milestone.quarter}
-                </span>
-                <h3 className="text-xl font-display font-bold mb-2">{milestone.title}</h3>
-                <p className="text-muted-foreground">{milestone.description}</p>
-              </div>
-              
-              <div className="hidden md:block w-1/2"></div>
-            </div>
-          ))}
+            ))}
+          </StaggeredAnimation>
         </div>
       </div>
     </section>
