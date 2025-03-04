@@ -136,8 +136,9 @@ export const StaggeredAnimation = ({
 
   return (
     <div ref={containerRef} className={className}>
-      {React.Children.map(children, (child, index) => (
+      {Array.isArray(children) && children.map((child, index) => (
         <div 
+          key={index}
           className={`transition-all duration-500 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
           style={{ transitionDelay: `${index * staggerDelay}ms` }}
         >
